@@ -1,7 +1,7 @@
 // Importamos Firebase desde sus servidores oficiales
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getFirestore, collection, addDoc, query, where, orderBy, limit, getDocs, startAfter, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 // === CONFIGURACIÓN DE FIREBASE === 
 const firebaseConfig = {
@@ -342,23 +342,26 @@ window.searchMessages = () => {
 };
 
 
-javascript
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+// ============================================================
+// === INICIO DE SESIÓN CON GOOGLE ===
+// ============================================================
 
-const auth = getAuth();
 const googleProvider = new GoogleAuthProvider();
 const btnGoogle = document.getElementById('btn-google');
 
 if (btnGoogle) {
     btnGoogle.addEventListener('click', async () => {
         try {
+            // Utilizamos el 'auth' que ya inicializaste en la línea 16
             const result = await signInWithPopup(auth, googleProvider);
             const user = result.user;
             console.log("Sesión iniciada con Google:", user.email);
-            // Tu función onAuthStateChanged se encargará de ocultar la pantalla de login
+            
+            // ¡Listo! Tu función onAuthStateChanged (línea 86) detectará 
+            // este inicio de sesión y hará el cambio de pantalla automáticamente.
+            
         } catch (error) {
             console.error("Error al iniciar con Google:", error);
-            // Opcional: mostrar el error en el div #auth-error de tu HTML
             const errorDiv = document.getElementById('auth-error');
             errorDiv.textContent = "Error al conectar con Google.";
             errorDiv.style.display = "block";
