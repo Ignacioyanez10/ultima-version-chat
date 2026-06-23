@@ -636,6 +636,14 @@ input[type="file"] {
         gap: 10px !important;
     }
 
+    /* Proteger cualquier botón o elemento que JavaScript inyecte después de 2 segundos */
+    #dynamic-rooms-list * {
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        width: auto !important;
+        display: inline-block !important;
+    }
+
     /* Adaptar los botones de las salas */
     .room-btn {
         width: auto !important;
