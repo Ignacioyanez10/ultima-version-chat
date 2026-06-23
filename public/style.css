@@ -586,24 +586,59 @@ input[type="file"] {
     transform: none;
 }
 
-/* Responsive: auth card en móvil */
-@media (max-width: 768px) {
-    .auth-card {
-        padding: 28px 20px;
-        border-radius: 0;
-        border: none;
-        box-shadow: none;
-        max-width: 100%;
-        height: 100%;
-        justify-content: center;
+/* ========================================================
+   📱 ADAPTACIÓN EXCLUSIVA PARA CELULARES (MÁX 768px)
+   ======================================================== */
+@media screen and (max-width: 768px) {
+    
+    /* 1. Evitar que la pantalla se mueva hacia los lados */
+    body {
+        overflow-x: hidden;
     }
 
-    .sidebar-user {
-        flex-direction: row;
-        padding: 10px 0 4px;
+    /* 2. Pasar la estructura de Fila (PC) a Columna (Celular) */
+    .contenedor-principal { 
+        flex-direction: column !important; 
+        height: 100vh !important;
     }
 
-    .sidebar-email {
-        display: none;
+    /* 3. Hacer que las SALAS sean una barra deslizable arriba, 
+          en vez de una barra lateral gigante que estorba */
+    .lista-salas {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 80px !important; /* Una barrita delgada arriba */
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important; /* Permite deslizar el dedo hacia los lados */
+        white-space: nowrap !important;
+        border-right: none !important;
+        border-bottom: 1px solid #ccc !important;
+        padding: 10px !important;
+    }
+
+    /* Los botones de cada sala dentro de la lista */
+    .lista-salas button {
+        flex: 0 0 auto !important; /* Evita que los botones se aplasten */
+        margin-right: 15px !important;
+        padding: 10px 15px !important;
+        font-size: 14px !important;
+    }
+
+    /* 4. Darle el resto del espacio al chat */
+    .area-chat {
+        width: 100% !important;
+        flex-grow: 1 !important; /* Ocupa todo el espacio sobrante */
+        height: calc(100vh - 80px) !important; /* 100% de la pantalla menos las salas */
+    }
+
+    /* 5. Asegurar que la barra de escribir sea cómoda de tocar */
+    .contenedor-input {
+        width: 100% !important;
+        padding: 10px !important;
+    }
+
+    .contenedor-input input {
+        font-size: 16px !important; /* CLAVE: Evita el zoom automático al escribir */
     }
 }
