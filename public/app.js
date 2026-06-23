@@ -1,0 +1,342 @@
+// Importamos Firebase desde sus servidores oficiales
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, where, orderBy, limit, getDocs, startAfter, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+// === CONFIGURACIÓN DE FIREBASE === 
+const firebaseConfig = {
+  apiKey: "AIzaSyACCTFwvv_YW_FGtM79RTyxvkYaSoTNaQ8",
+  authDomain: "michatrailway.firebaseapp.com",
+  projectId: "michatrailway",
+  storageBucket: "michatrailway.firebasestorage.app",
+  messagingSenderId: "196948202044",
+  appId: "1:196948202044:web:cb34c2a8ce46993ed76939"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+// === VARIABLES GLOBALES ===
+const socket = io();
+let username = "";
+let currentRoom = "General";
+let localMessages = [];
+let lastVisibleDoc = null;
+const soundSend = new Audio('/sounds/notificacion.mp3');
+const soundReceive = new Audio('/sounds/notificacion.mp3');
+const audioNotificacion = new Audio('/sounds/notificacion.mp3');
+
+// ============================================================
+// === SISTEMA DE AUTENTICACIÓN FIREBASE (EMAIL + CONTRASEÑA) ===
+// ============================================================
+
+// Cambia entre la pestaña de Login y la de Registro
+window.switchTab = (tab) => {
+    document.getElementById('form-login').style.display = tab === 'login' ? 'flex' : 'none';
+    document.getElementById('form-register').style.display = tab === 'register' ? 'flex' : 'none';
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+    document.getElementById('auth-error').textContent = '';
+};
+
+// Iniciar sesión con email y contraseña
+window.loginUser = async () => {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errorEl = document.getElementById('auth-error');
+    const btn = document.getElementById('btn-login');
+
+    errorEl.textContent = '';
+    btn.textContent = 'Ingresando...';
+    btn.disabled = true;
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // onAuthStateChanged se encarga del resto
+    } catch (error) {
+        errorEl.textContent = getAuthErrorMessage(error.code);
+        btn.textContent = 'Iniciar Sesión';
+        btn.disabled = false;
+    }
+};
+
+// Crear nueva cuenta
+window.registerUser = async () => {
+    const displayName = document.getElementById('reg-username').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const errorEl = document.getElementById('auth-error');
+    const btn = document.getElementById('btn-register');
+
+    errorEl.textContent = '';
+
+    if (!displayName) {
+        errorEl.textContent = 'Por favor ingresa un nombre de usuario.';
+        return;
+    }
+
+    btn.textContent = 'Creando cuenta...';
+    btn.disabled = true;
+
+    try {
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(credential.user, { displayName });
+        // onAuthStateChanged se encarga del resto
+    } catch (error) {
+        errorEl.textContent = getAuthErrorMessage(error.code);
+        btn.textContent = 'Crear Cuenta';
+        btn.disabled = false;
+    }
+};
+
+// Cerrar sesión
+window.logoutUser = async () => {
+    await signOut(auth);
+};
+
+// Traduce los códigos de error de Firebase a mensajes amigables en español
+function getAuthErrorMessage(code) {
+    const messages = {
+        'auth/invalid-email': 'El correo electrónico no es válido.',
+        'auth/user-not-found': 'No existe una cuenta con ese correo.',
+        'auth/wrong-password': 'Contraseña incorrecta.',
+        'auth/email-already-in-use': 'Ya existe una cuenta con ese correo.',
+        'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+        'auth/too-many-requests': 'Demasiados intentos fallidos. Espera unos minutos.',
+        'auth/invalid-credential': 'Correo o contraseña incorrectos.',
+        'auth/network-request-failed': 'Error de conexión. Verifica tu internet.',
+    };
+    return messages[code] || `Error inesperado (${code}). Inténtalo de nuevo.`;
+}
+
+// Observa los cambios de sesión: si el usuario inicia sesión, entra al chat.
+// Si cierra sesión, vuelve a la pantalla de login.
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // Usuario autenticado: usamos su displayName o la parte antes del @ del email
+        username = user.displayName || user.email.split('@')[0];
+
+        // Mostramos su nombre e email en el sidebar
+        document.getElementById('user-display-name').textContent = username;
+        document.getElementById('user-display-email').textContent = user.email;
+
+        // Ocultamos login y mostramos el chat
+        document.getElementById('login-screen').style.display = 'none';
+        switchRoom('General');
+    } else {
+        // Usuario desconectado: mostramos la pantalla de login
+        username = '';
+        document.getElementById('login-screen').style.display = 'flex';
+        // Reseteamos botones por si quedaron deshabilitados
+        const btnLogin = document.getElementById('btn-login');
+        const btnReg = document.getElementById('btn-register');
+        if (btnLogin) { btnLogin.textContent = 'Iniciar Sesión'; btnLogin.disabled = false; }
+        if (btnReg) { btnReg.textContent = 'Crear Cuenta'; btnReg.disabled = false; }
+    }
+});
+
+
+// ============================================================
+// === LÓGICA DEL CHAT ===
+// ============================================================
+
+// === CAMBIAR DE SALA ===
+window.switchRoom = async (roomName) => {
+    currentRoom = roomName;
+    document.getElementById('current-room-title').innerText = `Sala: ${currentRoom}`;
+    document.getElementById('messages-container').innerHTML = '<div id="scroll-anchor"></div><div id="loading-more">Cargando...</div>';
+    socket.emit('joinRoom', { username, room: currentRoom });
+    localMessages = [];
+    lastVisibleDoc = null;
+    await loadMessagesFromFirebase();
+};
+
+// === ENVIAR MENSAJES TEXTO ===
+window.sendMessage = async () => {
+    const input = document.getElementById('message-input');
+    const text = input.value.trim();
+    if (text === "") return;
+
+    const messageData = {
+        username: username,
+        room: currentRoom,
+        text: text,
+        type: 'text',
+        timestamp: serverTimestamp()
+    };
+
+    input.value = '';
+
+    try {
+        await addDoc(collection(db, "messages"), messageData);
+        socket.emit('chatMessage', messageData);
+        soundSend.play().catch(err => console.log("Sonido bloqueado por el navegador:", err));
+    } catch (error) {
+        console.error("Error al enviar mensaje:", error);
+    }
+};
+
+// Insertar Emoji rápido
+window.insertEmoji = (emoji) => {
+    const input = document.getElementById('message-input');
+    input.value += emoji;
+    input.focus();
+};
+
+// === ENVIAR ARCHIVOS ===
+window.sendFile = async () => {
+    const fileInput = document.getElementById('file-input');
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 500;
+            const scaleSize = MAX_WIDTH / img.width;
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scaleSize;
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+
+            const messageData = {
+                username: username,
+                room: currentRoom,
+                text: 'Ha enviado una imagen',
+                type: 'image',
+                fileUrl: dataUrl,
+                timestamp: serverTimestamp()
+            };
+
+            addDoc(collection(db, "messages"), messageData)
+                .then(() => {
+                    socket.emit('chatMessage', messageData);
+                    soundSend.play().catch(err => console.log("Sonido bloqueado:", err));
+                })
+                .catch(err => console.error("Error al guardar foto:", err));
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+};
+
+// === RECIBIR MENSAJES Y NOTIFICACIONES ===
+socket.on('message', (data) => {
+    renderMessage(data, true);
+    localMessages.push(data);
+    
+    if (data && data.username && username) {
+        const remitente = data.username.trim().toLowerCase();
+        const yoMismo = username.trim().toLowerCase();
+        if (remitente !== yoMismo) {
+            audioNotificacion.play().catch(() => console.log("Sonido bloqueado por el navegador"));
+        }
+    }
+});
+
+socket.on('notification', (text) => {
+    Toastify({
+        text: text,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: { background: "#128c7e" }
+    }).showToast();
+});
+
+// Renderiza un mensaje en la pantalla HTML
+function renderMessage(data, appendAtBottom = true) {
+    const container = document.getElementById('messages-container');
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('message');
+    if (data.username === username) msgDiv.classList.add('mine');
+
+    let content = "";
+
+    if (data.type === 'image') {
+        content = `<strong>${data.username}</strong>
+                   <img src="${data.fileUrl}" style="max-width: 200px; border-radius: 8px; margin-top: 5px;">`;
+    } else {
+        content = `<strong>${data.username}</strong> ${data.text}`;
+    }
+    
+    msgDiv.innerHTML = content;
+
+    if (appendAtBottom) {
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+    } else {
+        const anchor = document.getElementById('scroll-anchor');
+        container.insertBefore(msgDiv, anchor.nextSibling);
+    }
+}
+
+// === HISTORIAL CON SCROLL INFINITO ===
+async function loadMessagesFromFirebase() {
+    try {
+        const messagesRef = collection(db, "messages");
+        let q;
+
+        if (lastVisibleDoc) {
+            q = query(messagesRef, where("room", "==", currentRoom), orderBy("timestamp", "desc"), startAfter(lastVisibleDoc), limit(15));
+        } else {
+            q = query(messagesRef, where("room", "==", currentRoom), orderBy("timestamp", "desc"), limit(15));
+        }
+
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            lastVisibleDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+            const docs = querySnapshot.docs;
+            
+            for (let i = 0; i < docs.length; i++) {
+                const data = docs[i].data();
+                renderMessage(data, false);
+                localMessages.unshift(data);
+            }
+        }
+    } catch (error) {
+        console.error("❌ ERROR CRÍTICO AL LEER DE FIREBASE:", error);
+        alert("Firestore no pudo leer los mensajes. Abre la consola (F12) para ver el error.");
+    }
+}
+
+// Intersection Observer: detecta cuando llegamos arriba del todo
+const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && username !== "") {
+        document.getElementById('loading-more').style.display = 'block';
+        loadMessagesFromFirebase().then(() => {
+            document.getElementById('loading-more').style.display = 'none';
+        });
+    }
+});
+
+window.onload = () => {
+    observer.observe(document.getElementById('scroll-anchor'));
+};
+
+// === BUSCADOR EN EL HISTORIAL CLIENTE ===
+window.searchMessages = () => {
+    const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+    const container = document.getElementById('messages-container');
+    
+    container.querySelectorAll('.message').forEach(msg => msg.remove());
+
+    if (searchTerm === "") {
+        localMessages.forEach(data => renderMessage(data, true));
+        return;
+    }
+
+    const filtered = localMessages.filter(msg => 
+        (msg.text && msg.text.toLowerCase().includes(searchTerm)) || 
+        (msg.username && msg.username.toLowerCase().includes(searchTerm))
+    );
+    
+    filtered.forEach(data => renderMessage(data, true));
+};

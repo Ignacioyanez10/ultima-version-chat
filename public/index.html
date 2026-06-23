@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chat en Tiempo Real</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <!-- =====================================================
+         PANTALLA DE INICIO DE SESIÓN / REGISTRO (FIREBASE)
+         ===================================================== -->
+    <div id="login-screen">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <span class="auth-logo-icon">💬</span>
+                <h1 class="auth-title">SuperChat</h1>
+                <p class="auth-subtitle">Conéctate con el mundo</p>
+            </div>
+
+            <!-- Pestañas: Iniciar Sesión / Crear Cuenta -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">
+                    Iniciar Sesión
+                </button>
+                <button class="auth-tab" id="tab-register" onclick="switchTab('register')">
+                    Crear Cuenta
+                </button>
+            </div>
+
+            <!-- Mensaje de error -->
+            <div id="auth-error" class="auth-error"></div>
+
+            <!-- Formulario: Iniciar Sesión -->
+            <div id="form-login" class="auth-form">
+                <input type="email" id="login-email" class="auth-input" placeholder="Correo electrónico" autocomplete="email">
+                <input type="password" id="login-password" class="auth-input" placeholder="Contraseña" autocomplete="current-password"
+                    onkeypress="if(event.key === 'Enter') loginUser()">
+                <button id="btn-login" class="auth-btn" onclick="loginUser()">
+                    Iniciar Sesión
+                </button>
+            </div>
+
+            <!-- Formulario: Crear Cuenta -->
+            <div id="form-register" class="auth-form" style="display:none">
+                <input type="text" id="reg-username" class="auth-input" placeholder="Nombre de usuario" autocomplete="username">
+                <input type="email" id="reg-email" class="auth-input" placeholder="Correo electrónico" autocomplete="email">
+                <input type="password" id="reg-password" class="auth-input" placeholder="Contraseña (mín. 6 caracteres)" autocomplete="new-password"
+                    onkeypress="if(event.key === 'Enter') registerUser()">
+                <button id="btn-register" class="auth-btn" onclick="registerUser()">
+                    Crear Cuenta
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         BARRA LATERAL DE SALAS
+         ===================================================== -->
+    <div class="sidebar">
+        <h2>Salas de Chat</h2>
+        <button class="room-btn" onclick="switchRoom('General')">💬 General</button>
+        <button class="room-btn" onclick="switchRoom('Deportes')">⚽ Deportes</button>
+        <button class="room-btn" onclick="switchRoom('Tecnología')">💻 Tecnología</button>
+
+        <!-- Perfil del usuario y botón de cerrar sesión -->
+        <div class="sidebar-user">
+            <div class="sidebar-user-info">
+                <span id="user-display-name" class="sidebar-username">Usuario</span>
+                <span id="user-display-email" class="sidebar-email">correo@email.com</span>
+            </div>
+            <button class="logout-btn" onclick="logoutUser()" title="Cerrar sesión">⏻</button>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         ÁREA PRINCIPAL DEL CHAT
+         ===================================================== -->
+    <div class="chat-container">
+        <div class="chat-header">
+            <h3 id="current-room-title">Sala: General</h3>
+            <input type="text" id="search-input" placeholder="Buscar en mensajes..." onkeyup="searchMessages()">
+        </div>
+        
+        <div id="messages-container">
+            <div id="scroll-anchor"></div>
+            <div id="loading-more">Cargando mensajes anteriores...</div>
+        </div>
+
+        <div class="input-area">
+            <button class="emoji-btn" onclick="insertEmoji('😀')">😀</button>
+            <button class="emoji-btn" onclick="insertEmoji('👍')">👍</button>
+            <button class="emoji-btn" onclick="insertEmoji('❤️')">❤️</button>
+            <emoji-picker></emoji-picker>
+
+            <label class="file-label" title="Adjuntar archivo">
+                📎 <input type="file" id="file-input" onchange="sendFile()">
+            </label>
+            <input type="text" id="message-input" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') sendMessage()">
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

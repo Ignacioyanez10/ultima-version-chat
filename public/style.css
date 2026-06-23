@@ -1,0 +1,604 @@
+/* ==========================================================================
+   1. VARIABLES Y CONFIGURACIÓN GENERAL (MODO OSCURO SIMPLIFICADO)
+   ========================================================================== */
+
+   /* Reseteo universal para que todo mida exactamente lo que debe medir */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+   
+
+
+
+
+
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    margin: 0; 
+    display: flex; 
+    height: 100vh; 
+    width: 100vw;
+    overflow: hidden;
+    background-color: #0f1115; /* Fondo ultra oscuro profundo */
+    color: #e3e6eb; /* Texto general claro pero suave para no cansar la vista */
+}
+
+/* Estilo general para botones interactivos */
+button { 
+    padding: 10px 18px; 
+    border: none; 
+    border-radius: 12px; /* Esquinas más sutiles y modernas */
+    background-color: #1f6fed; /* Azul eléctrico minimalista */
+    color: #ffffff; 
+    font-weight: 500;
+    cursor: pointer; 
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background-color: #388bfd; /* Brillo sutil al pasar el mouse */
+    transform: translateY(-1px); /* Efecto leve de flotación */
+}
+
+
+/* ==========================================================================
+   2. PANTALLA DE INICIO DE SESIÓN (LOGIN - MANTIENE TONO LIMPIO/NEUTRO)
+   ========================================================================== */
+#login-screen { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background-color: #0f1115; /* Integrado al modo oscuro */
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    z-index: 10; 
+}
+
+#login-screen input {
+    background: #161b22;
+    border: 1px solid #30363d;
+    color: white;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    outline: none;
+    text-align: center;
+}
+
+
+/* ==========================================================================
+   3. BARRA LATERAL (SIDEBAR - APARIENCIA DE ACERO OSCURO)
+   ========================================================================== */
+.sidebar { 
+    width: 260px; 
+    background-color: #161920; /* Gris carbón azulado */
+    border-right: 1px solid #21262e; /* Separador sutil e imperceptible */
+    color: #8b949e; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.sidebar h2 { 
+    font-size: 14px; 
+    text-transform: uppercase; /* Estilo profesional */
+    letter-spacing: 1px;
+    color: #f0f6fc;
+    margin-bottom: 20px; 
+}
+
+/* Lista de salas en formato de píldoras minimalistas */
+.room-btn { 
+    background-color: transparent; 
+    border: none; 
+    color: #8b949e; 
+    padding: 12px 15px; 
+    margin-bottom: 6px; 
+    cursor: pointer; 
+    border-radius: 8px; 
+    font-size: 15px;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.room-btn:hover { 
+    background-color: #21262e; /* Destaca sutilmente al pasar el mouse */
+    color: #1f6fed; /* El texto se ilumina con el tono principal */
+}
+
+
+/* ==========================================================================
+   4. CONTENEDOR PRINCIPAL DEL CHAT
+   ========================================================================== */
+.chat-container { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    background-color: #0f1115;
+}
+
+/* Encabezado limpio y plano */
+.chat-header { 
+    background-color: #161920; 
+    padding: 15px 25px; 
+    border-bottom: 1px solid #21262e; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+}
+
+.chat-header h3 {
+    margin: 0;
+    color: #f0f6fc;
+    font-size: 16px;
+}
+
+/* Caja de búsqueda elegante */
+#search-input { 
+    padding: 8px 14px; 
+    border-radius: 8px; 
+    background-color: #0f1115;
+    border: 1px solid #21262e; 
+    color: #ffffff;
+    outline: none;
+    font-size: 14px;
+    transition: border 0.2s;
+}
+
+#search-input:focus {
+    border-color: #1f6fed; /* Se ilumina al escribir */
+}
+
+
+/* ==========================================================================
+   5. ÁREA DE MENSAJES (ELEGANCIA EN BLOQUE)
+   ========================================================================== */
+#messages-container { 
+    flex: 1; 
+    padding: 25px; 
+    overflow-y: auto; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 4px; /* Mensajes más juntos y fluidos */
+    background-image: url(img/fondogeneral.webp);
+}
+
+/* Estilo base para mensajes del resto de usuarios */
+.message { 
+    background-color: #161920; /* Globo gris oscuro */
+    color: #e3e6eb;
+    padding: 10px 14px; 
+    border-radius: 12px 12px 12px 2px; /* Esquina inferior recortada */
+    margin-bottom: 4px; 
+    max-width: 55%; 
+    align-self: flex-start; 
+    font-size: 15px;
+    line-height: 1.4;
+    border: 1px solid #21262e;
+}
+
+.message strong {
+    color: #58a6ff; /* Nombre del usuario en azul claro */
+    font-size: 13px;
+    display: block;
+    margin-bottom: 3px;
+}
+
+/* Mensajes enviados por ti (Tono verde oliva oscuro y elegante) */
+.message.mine { 
+    background-color: #001c0f; /* Verde bosque nocturno muy sutil */
+    color: #e6f7ed;
+    border-color: #175e38;
+    border-radius: 12px 12px 2px 12px;
+    align-self: flex-end; 
+}
+
+.message.mine strong {
+    color: #ededed; /* Tu propio nombre resalta en verde claro */
+}
+
+/* Mensaje con imágenes */
+.message img {
+    border-radius: 8px;
+    border: 1px solid #30363d;
+    margin-top: 8px;
+}
+
+/* Alerta de carga superior */
+#loading-more { 
+    text-align: center; 
+    color: #8b949e; 
+    padding: 10px; 
+    font-size: 13px;
+}
+
+
+/* ==========================================================================
+   6. BARRA INFERIOR DE ESCRITURA (ESTILO FLOTANTE MINIMALISTA)
+   ========================================================================== */
+.input-area { 
+    background-color: #161920; 
+    padding: 15px 25px; 
+    display: flex; 
+    gap: 15px; 
+    align-items: center;
+    border-top: 1px solid #21262e;
+}
+
+/* Barra de texto principal */
+#message-input { 
+    flex: 1; 
+    padding: 12px 18px; 
+    border-radius: 10px; 
+    background-color: #0f1115;
+    border: 1px solid #21262e; 
+    color: #ffffff;
+    outline: none;
+    font-size: 15px;
+    transition: all 0.2s;
+}
+
+#message-input:focus {
+    border-color: #1f6fed;
+    background-color: #12141a; /* Se oscurece ligeramente al escribir */
+}
+
+/* Emojis 😄 y Adjuntos 📎 */
+.emoji-btn, .file-label { 
+    background: none; 
+    font-size: 22px; 
+    padding: 0; 
+    color: #8b949e; /* Gris neutral */
+    cursor: pointer; 
+    transition: color 0.2s, transform 0.2s;
+}
+
+.emoji-btn:hover, .file-label:hover {
+    color: #58a6ff; /* Se iluminan en azul al pasar el cursor */
+    transform: scale(1.05);
+}
+
+input[type="file"] { 
+    display: none; 
+}
+
+
+
+/* ==========================================================================
+   8. ADAPTACIÓN PARA CELULARES (RESPONSIVE DESIGN)
+   ========================================================================== */
+
+/* Esto se activa automáticamente solo en pantallas menores a 768 píxeles (Celulares) */
+@media (max-width: 768px) {
+    
+    /* Cambiamos la orientación de la pantalla de horizontal a vertical */
+    body {
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+    }
+
+    /* 1. Rediseño de la barra lateral para que no ocupe toda la izquierda */
+    .sidebar {
+        width: 100%;
+        height: auto;
+        padding: 10px 15px;
+        margin: 0;
+        border-right: none;
+        border-bottom: 1px solid #21262e;
+        display: flex;
+        flex-direction: row; /* Las salas se ponen una al lado de la otra si hay espacio */
+        overflow-x: auto;    /* Si tienes muchas salas, puedes arrastrarlas de lado con el dedo */
+        gap: 8px;
+    }
+
+   .sidebar h2 {
+        display: none; /* Ocultamos el título "SALAS" en móvil para ganar mucho espacio vertical */
+    }
+
+    /* Ponemos los botones de las salas uno al lado del otro en horizontal */
+    .sidebar br {
+        display: none;        /* Ocultamos saltos de línea si los hay */
+    }
+
+    /* Contenedor flexible para que las salas hagan fila de izquierda a derecha */
+    .sidebar {
+        display: flex;
+        flex-direction: column; 
+    }
+    
+    /* Si tienes las salas metidas en un div o directo, este ajuste las alinea de lado */
+    .room-btn {
+        margin: 0;
+        padding: 6px 12px;
+        font-size: 13px;
+        white-space: nowrap; /* Evita que el nombre de la sala se parta en dos líneas */
+    }
+
+    /* 2. Ajustes en la zona de Chat */
+    .chat-header {
+        padding: 10px 15px;  /* Reducimos espacios para ganar pantalla */
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .chat-container {
+        flex: 1; /* Absorbe el 100% del espacio sobrante abajo */
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    .chat-header h3 {
+        font-size: 14px;     /* Texto un poco más pequeño */
+    }
+
+    #search-input {
+        width: 120px;        /* Achicamos el buscador para que no empuje el título */
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+   #messages-container {
+        padding: 12px;
+        width: 100%;
+    }
+
+    .message {
+        max-width: 85%;      /* ¡Importante! En celular el texto debe expandirse más a lo ancho */
+        font-size: 14px;     /* Tamaño ideal para pantallas pequeñas */
+        padding: 8px 12px;
+    }
+
+    /* 4. Barra inferior donde se escribe (Input Area) */
+    .input-area {
+        padding: 10px 15px;  /* Más compacto */
+        gap: 8px;
+    }
+
+    #message-input {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    /* Ajustamos el tamaño de los iconos para que se puedan tocar fácil con el dedo */
+    .emoji-btn, .file-label {
+        font-size: 24px;     /* Un toque más grandes para facilitar el tap */
+    }
+
+    button {
+        padding: 10px 15px;  /* Botón de enviar ligeramente más compacto */
+        font-size: 14px;
+    }
+}
+
+
+
+/* ==========================================================================
+   9. SISTEMA DE AUTENTICACIÓN (FIREBASE AUTH - LOGIN / REGISTRO)
+   ========================================================================== */
+
+/* Tarjeta central del formulario de autenticación */
+.auth-card {
+    background-color: #161920;
+    border: 1px solid #21262e;
+    border-radius: 18px;
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Encabezado con logo e ícono */
+.auth-logo {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.auth-logo-icon {
+    font-size: 2.8rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.auth-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #f0f6fc;
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.auth-subtitle {
+    font-size: 0.85rem;
+    color: #8b949e;
+    margin-top: 4px;
+}
+
+/* Pestañas Iniciar Sesión / Crear Cuenta */
+.auth-tabs {
+    display: flex;
+    background-color: #0f1115;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 20px;
+    gap: 4px;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 9px 10px;
+    background: transparent;
+    color: #8b949e;
+    font-size: 13.5px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    transform: none; /* desactiva el translateY global */
+}
+
+.auth-tab:hover {
+    background-color: #21262e;
+    color: #e3e6eb;
+    transform: none;
+}
+
+.auth-tab.active {
+    background-color: #1f6fed;
+    color: #ffffff;
+    font-weight: 600;
+    transform: none;
+}
+
+/* Mensaje de error de autenticación */
+.auth-error {
+    color: #f85149;
+    font-size: 13px;
+    text-align: center;
+    min-height: 18px;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+/* Contenedor de formulario */
+.auth-form {
+    flex-direction: column;
+    gap: 12px;
+    display: flex;
+}
+
+/* Inputs del formulario de auth */
+.auth-input {
+    width: 100%;
+    padding: 12px 16px;
+    background: #0f1115;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    color: #f0f6fc;
+    font-size: 14.5px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.auth-input:focus {
+    border-color: #1f6fed;
+}
+
+.auth-input::placeholder {
+    color: #484f58;
+}
+
+/* Botón principal de autenticación */
+.auth-btn {
+    width: 100%;
+    padding: 13px;
+    background-color: #1f6fed;
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 10px;
+    margin-top: 4px;
+    transition: all 0.2s ease;
+}
+
+.auth-btn:hover {
+    background-color: #388bfd;
+    transform: translateY(-1px);
+}
+
+.auth-btn:disabled {
+    background-color: #21262e;
+    color: #8b949e;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+/* ==========================================================================
+   10. PERFIL DE USUARIO Y BOTÓN DE CERRAR SESIÓN (SIDEBAR)
+   ========================================================================== */
+
+/* Contenedor del perfil, pegado al fondo del sidebar */
+.sidebar-user {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid #21262e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.sidebar-user-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+}
+
+.sidebar-username {
+    color: #f0f6fc;
+    font-size: 13.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-email {
+    color: #484f58;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Botón de logout (ícono de apagado) */
+.logout-btn {
+    background: transparent;
+    color: #8b949e;
+    padding: 7px 9px;
+    font-size: 17px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background-color: #3d1a1a;
+    color: #f85149;
+    transform: none;
+}
+
+/* Responsive: auth card en móvil */
+@media (max-width: 768px) {
+    .auth-card {
+        padding: 28px 20px;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        max-width: 100%;
+        height: 100%;
+        justify-content: center;
+    }
+
+    .sidebar-user {
+        flex-direction: row;
+        padding: 10px 0 4px;
+    }
+
+    .sidebar-email {
+        display: none;
+    }
+}
