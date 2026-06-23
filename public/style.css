@@ -589,56 +589,111 @@ input[type="file"] {
 /* ========================================================
    📱 ADAPTACIÓN EXCLUSIVA PARA CELULARES (MÁX 768px)
    ======================================================== */
-@media screen and (max-width: 768px) {
+
+   @media screen and (max-width: 768px) {
     
-    /* 1. Evitar que la pantalla se mueva hacia los lados */
+    /* 1. Estructura principal: Convertir de fila (PC) a columna (Celular) */
     body {
-        overflow-x: hidden;
-    }
-
-    /* 2. Pasar la estructura de Fila (PC) a Columna (Celular) */
-    .contenedor-principal { 
-        flex-direction: column !important; 
+        display: flex !important;
+        flex-direction: column !important;
         height: 100vh !important;
+        width: 100vw !important;
+        margin: 0 !important;
+        overflow: hidden !important; /* Evita que la pantalla rebote o tenga doble scroll */
     }
 
-    /* 3. Hacer que las SALAS sean una barra deslizable arriba, 
-          en vez de una barra lateral gigante que estorba */
-    .lista-salas {
+    /* 2. Barra lateral (Salas): Moverla arriba y hacerla compacta */
+    .sidebar {
         width: 100% !important;
         height: auto !important;
-        max-height: 80px !important; /* Una barrita delgada arriba */
-        display: flex !important;
-        flex-direction: row !important;
-        overflow-x: auto !important; /* Permite deslizar el dedo hacia los lados */
-        white-space: nowrap !important;
+        min-height: auto !important;
+        position: relative !important; 
+        padding: 10px !important;
         border-right: none !important;
         border-bottom: 1px solid #ccc !important;
-        padding: 10px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
     }
 
-    /* Los botones de cada sala dentro de la lista */
-    .lista-salas button {
-        flex: 0 0 auto !important; /* Evita que los botones se aplasten */
-        margin-right: 15px !important;
-        padding: 10px 15px !important;
-        font-size: 14px !important;
+    /* Ocultar el título grande de "Salas de Chat" para ahorrar espacio */
+    .sidebar h2 {
+        display: none !important;
     }
 
-    /* 4. Darle el resto del espacio al chat */
-    .area-chat {
+    /* Arreglar el buscador de crear sala para que no haga zoom */
+    #new-room-input {
+        font-size: 16px !important; 
+    }
+
+    /* Contenedor de las salas: Convertirlo en un carrusel deslizable horizontal */
+    #dynamic-rooms-list {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        padding-bottom: 5px !important;
+        gap: 10px !important;
+    }
+
+    /* Adaptar los botones de las salas */
+    .room-btn {
+        width: auto !important;
+        display: inline-block !important;
+        flex: 0 0 auto !important; /* Evita que se aplasten */
+        margin-bottom: 0 !important;
+    }
+
+    /* Fila de usuario (correo y botón cerrar sesión) */
+    .sidebar-user {
+        position: static !important; 
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 5px 0 0 0 !important;
+        border-top: 1px solid #eee !important;
+        background: transparent !important;
+    }
+
+    /* 3. Área de Chat: Que ocupe todo el resto de la pantalla abajo */
+    .chat-container {
         width: 100% !important;
-        flex-grow: 1 !important; /* Ocupa todo el espacio sobrante */
-        height: calc(100vh - 80px) !important; /* 100% de la pantalla menos las salas */
+        flex-grow: 1 !important; /* Toma todo el espacio sobrante */
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
     }
 
-    /* 5. Asegurar que la barra de escribir sea cómoda de tocar */
-    .contenedor-input {
+    /* Cabecera del chat (título y búsqueda) */
+    .chat-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+    
+    #search-input {
+        width: 100% !important;
+        font-size: 16px !important; /* Evita zoom */
+    }
+
+    /* Contenedor de mensajes: El único lugar donde se puede hacer scroll hacia abajo */
+    #messages-container {
+        flex-grow: 1 !important;
+        overflow-y: auto !important;
+    }
+
+    /* 4. Barra para escribir mensajes */
+    .input-area {
         width: 100% !important;
         padding: 10px !important;
+        flex-wrap: wrap !important;
+        gap: 5px !important;
     }
-
-    .contenedor-input input {
-        font-size: 16px !important; /* CLAVE: Evita el zoom automático al escribir */
+    
+    #message-input {
+        flex-grow: 1 !important;
+        min-width: 150px !important; 
+        font-size: 16px !important; /* CLAVE: Previene el zoom horrible al escribir */
     }
 }
