@@ -340,3 +340,28 @@ window.searchMessages = () => {
     
     filtered.forEach(data => renderMessage(data, true));
 };
+
+
+javascript
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+
+const auth = getAuth();
+const googleProvider = new GoogleAuthProvider();
+const btnGoogle = document.getElementById('btn-google');
+
+if (btnGoogle) {
+    btnGoogle.addEventListener('click', async () => {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+            console.log("Sesión iniciada con Google:", user.email);
+            // Tu función onAuthStateChanged se encargará de ocultar la pantalla de login
+        } catch (error) {
+            console.error("Error al iniciar con Google:", error);
+            // Opcional: mostrar el error en el div #auth-error de tu HTML
+            const errorDiv = document.getElementById('auth-error');
+            errorDiv.textContent = "Error al conectar con Google.";
+            errorDiv.style.display = "block";
+        }
+    });
+}
