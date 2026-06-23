@@ -262,6 +262,14 @@ window.switchRoom = async (roomName) => {
     localMessages = [];
     lastVisibleDoc = null;
     await loadMessagesFromFirebase();
+
+    // === NUEVO: Bajar el scroll automáticamente al entrar a la sala ===
+    setTimeout(() => {
+        const container = document.getElementById('messages-container');
+        if (container) {
+            container.scrollTop = container.scrollHeight;
+        }
+},100);
 };
 
 // === ENVIAR MENSAJES TEXTO ===
@@ -382,8 +390,20 @@ function renderMessage(data, appendAtBottom = true) {
 
     if (appendAtBottom) {
         container.appendChild(msgDiv);
-        container.scrollTop = container.scrollHeight;
+        
+        // Si el mensaje tiene una imagen, esperamos a que cargue para calcular el scroll
+        const img = msgDiv.querySelector('img');
+        if (img) {
+            img.onload = () => { container.scrollTop = container.scrollHeight; };
+        }
+        
+        // Un pequeño retraso asegura que el navegador haya renderizado el texto antes de bajar
+        setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+        }, 50);
+        
     } else {
+        // Esto es para cuando scrolleas hacia arriba para cargar mensajes antiguos
         const anchor = document.getElementById('scroll-anchor');
         container.insertBefore(msgDiv, anchor.nextSibling);
     }
