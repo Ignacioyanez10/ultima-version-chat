@@ -59,6 +59,11 @@ button:hover {
     justify-content: center; 
     align-items: center; 
     z-index: 10; 
+
+    background-image: url("https://i.pinimg.com/564x/31/78/0f/31780f853582e30613b6542624b31ce3.jpg");
+    background-size: cover; /* Hace que la imagen cubra toda la pantalla */
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 #login-screen input {
