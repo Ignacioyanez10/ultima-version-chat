@@ -367,6 +367,7 @@ socket.on('message', (data) => {
     localMessages.push(data);
     
     if (data && data.username && username) {
+        
         const remitente = data.username.trim().toLowerCase();
         const yoMismo = username.trim().toLowerCase();
         if (remitente !== yoMismo) {
@@ -383,6 +384,9 @@ socket.on('notification', (text) => {
         position: "right",
         style: { background: "#128c7e" }
     }).showToast();
+
+    audioNotificacion.play().catch(() => console.log("Sonido bloqueado por el navegador"));
+
 });
 
 // Renderiza un mensaje en la pantalla HTML

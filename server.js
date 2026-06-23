@@ -29,6 +29,10 @@ io.on('connection', (socket) => {
 
     // Evento de desconexión
     socket.on('disconnect', () => {
+        // ¡NUEVO! Si el usuario tenía un nombre y sala registrados, avisamos que salió
+        if (socket.username && socket.room) {
+            socket.to(socket.room).emit('notification', `${socket.username} ha salido de la sala.`);
+        }
         console.log('Usuario desconectado:', socket.id);
     });
 });
