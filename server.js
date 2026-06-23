@@ -18,7 +18,18 @@ io.on('connection', (socket) => {
     socket.on('joinRoom', ({ username, room }) => {
         socket.join(room);
         // Notificamos a la sala que alguien entró (Requerimiento 7)
-        socket.to(room).emit('notification', `${username} se ha unido a la sala ${room}.`);
+        socket.to(room).emit('notification', `🚪 ${username} se ha unido a la sala ${room}.`);
+    });
+
+    // Notificamos a la sala anterior que el usuario la abandonó
+    socket.on('leaveRoom', ({ username, room }) => {
+        socket.to(room).emit('notification', `👋 ${username} ha salido de la sala ${room}.`);
+        socket.leave(room);
+    });
+
+    // Notificamos cuando un usuario cierra sesión
+    socket.on('userLogout', ({ username, room }) => {
+        socket.to(room).emit('notification', `🔴 ${username} ha cerrado sesión.`);
     });
 
     // Escuchamos mensajes y archivos entrantes (Requerimiento 6)
@@ -29,10 +40,6 @@ io.on('connection', (socket) => {
 
     // Evento de desconexión
     socket.on('disconnect', () => {
-        // ¡NUEVO! Si el usuario tenía un nombre y sala registrados, avisamos que salió
-        if (socket.username && socket.room) {
-            socket.to(socket.room).emit('notification', `${socket.username} ha salido de la sala.`);
-        }
         console.log('Usuario desconectado:', socket.id);
     });
 });

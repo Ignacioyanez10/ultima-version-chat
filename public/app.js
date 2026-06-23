@@ -93,6 +93,9 @@ window.registerUser = async () => {
 
 // Cerrar sesión
 window.logoutUser = async () => {
+    // Notificamos a la sala actual y emitimos sonido antes de salir
+    socket.emit('userLogout', { username, room: currentRoom });
+    audioNotificacion.play().catch(() => console.log("Sonido bloqueado por el navegador"));
     await signOut(auth);
 };
 
@@ -171,6 +174,7 @@ window.createRoom = async () => {
             createdAt: serverTimestamp()
         });
         input.value = '';
+        audioNotificacion.play().catch(() => console.log("Sonido bloqueado por el navegador"));
         Toastify({ text: `Sala "${roomName}" creada`, duration: 3000, style: { background: "#4caf50" } }).showToast();
     } catch (error) {
         console.error("Error al crear sala:", error);
@@ -255,6 +259,13 @@ window.deleteRoom = async (roomId, roomName) => {
 
 // === CAMBIAR DE SALA ===
 window.switchRoom = async (roomName) => {
+    const previousRoom = currentRoom;
+
+    // Notificamos a la sala anterior que el usuario la abandona
+    if (previousRoom && previousRoom !== roomName && username) {
+        socket.emit('leaveRoom', { username, room: previousRoom });
+    }
+
     currentRoom = roomName;
     document.getElementById('current-room-title').innerText = `Sala: ${currentRoom}`;
 
@@ -273,6 +284,7 @@ window.switchRoom = async (roomName) => {
     }
 
     socket.emit('joinRoom', { username, room: currentRoom });
+    audioNotificacion.play().catch(() => console.log("Sonido bloqueado por el navegador"));
     localMessages = [];
     lastVisibleDoc = null;
 
@@ -367,7 +379,6 @@ socket.on('message', (data) => {
     localMessages.push(data);
     
     if (data && data.username && username) {
-        
         const remitente = data.username.trim().toLowerCase();
         const yoMismo = username.trim().toLowerCase();
         if (remitente !== yoMismo) {
@@ -377,6 +388,7 @@ socket.on('message', (data) => {
 });
 
 socket.on('notification', (text) => {
+    audioNotificacion.play().catch(() => console.log("Sonido bloqueado por el navegador"));
     Toastify({
         text: text,
         duration: 3000,
@@ -384,9 +396,6 @@ socket.on('notification', (text) => {
         position: "right",
         style: { background: "#128c7e" }
     }).showToast();
-
-    audioNotificacion.play().catch(() => console.log("Sonido bloqueado por el navegador"));
-
 });
 
 // Renderiza un mensaje en la pantalla HTML
