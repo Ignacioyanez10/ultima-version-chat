@@ -260,19 +260,22 @@ window.switchRoom = async (roomName) => {
 
 
     // 1. Recreamos el HTML, pero ahora el "loading-more" nace OCULTO (display: none)
-    document.getElementById('messages-container').innerHTML = '<div id="scroll-anchor"></div><div id="loading-more" style="display: none; text-align: center; padding: 10px; color: #888;">Cargando mensajes anteriores...</div>';
+    document.getElementById('messages-container').innerHTML = `
+        <div id="loading-more" style="display: none; text-align: center; padding: 10px; color: #888; font-size: 14px;">⏳ Cargando mensajes anteriores...</div>
+        <div id="scroll-anchor" style="height: 1px;"></div>
+    `;
 
     // 2. RECONECTAMOS el sensor de scroll al nuevo "scroll-anchor"
     const newAnchor = document.getElementById('scroll-anchor');
     if (newAnchor) {
-        observer.disconnect(); // Apagamos el sensor viejo
-        observer.observe(newAnchor); // Lo conectamos al nuevo chat
+        observer.disconnect(); 
+        observer.observe(newAnchor); 
     }
 
     socket.emit('joinRoom', { username, room: currentRoom });
     localMessages = [];
     lastVisibleDoc = null;
-    
+
     await loadMessagesFromFirebase();
 
     // === NUEVO: Bajar el scroll automáticamente al entrar a la sala ===
