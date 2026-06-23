@@ -63,7 +63,7 @@
                 <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width: 18px; height: 18px;">
                 Continuar con Google
             </button>
-            
+
         </div>
     </div>
 
@@ -72,9 +72,17 @@
          ===================================================== -->
     <div class="sidebar">
         <h2>Salas de Chat</h2>
+       <!-- Opción para crear nuevas salas -->
+        <div style="display: flex; gap: 5px; margin-bottom: 15px; padding: 0 10px;">
+            <input type="text" id="new-room-input" placeholder="Nombre de la sala..." style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 14px;" onkeypress="if(event.key === 'Enter') createRoom()">
+            <button onclick="createRoom()" title="Crear Sala" style="padding: 8px 12px; cursor: pointer; background: #128c7e; color: white; border: none; border-radius: 4px; font-weight: bold;">+</button>
+        </div>
+
+        <!-- Sala General (Fija) -->
         <button class="room-btn" onclick="switchRoom('General')">💬 General</button>
-        <button class="room-btn" onclick="switchRoom('Deportes')">⚽ Deportes</button>
-        <button class="room-btn" onclick="switchRoom('Tecnología')">💻 Tecnología</button>
+        
+        <!-- Contenedor donde aparecerán las salas creadas dinámicamente -->
+        <div id="dynamic-rooms-list"></div>
 
         <!-- Perfil del usuario y botón de cerrar sesión -->
         <div class="sidebar-user">

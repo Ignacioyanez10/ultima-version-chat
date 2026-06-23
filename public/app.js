@@ -1,6 +1,6 @@
 // Importamos Firebase desde sus servidores oficiales
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, where, orderBy, limit, getDocs, startAfter, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, where, orderBy, limit, getDocs, startAfter, serverTimestamp, doc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
 // === CONFIGURACIÓN DE FIREBASE === 
@@ -21,6 +21,7 @@ const auth = getAuth(app);
 const socket = io();
 let username = "";
 let currentRoom = "General";
+let unsubscribeRooms = null;
 let localMessages = [];
 let lastVisibleDoc = null;
 const soundSend = new Audio('/sounds/notificacion.mp3');
@@ -123,10 +124,15 @@ onAuthStateChanged(auth, (user) => {
 
         // Ocultamos login y mostramos el chat
         document.getElementById('login-screen').style.display = 'none';
+
+        listenToRooms(); // <--- INICIA LA CARGA DE SALAS
+
         switchRoom('General');
     } else {
         // Usuario desconectado: mostramos la pantalla de login
         username = '';
+        if (unsubscribeRooms) unsubscribeRooms(); // <--- APAGA LA CARGA DE SALAS AL SALIR
+
         document.getElementById('login-screen').style.display = 'flex';
         // Reseteamos botones por si quedaron deshabilitados
         const btnLogin = document.getElementById('btn-login');
@@ -140,6 +146,112 @@ onAuthStateChanged(auth, (user) => {
 // ============================================================
 // === LÓGICA DEL CHAT ===
 // ============================================================
+
+// ============================================================
+// === GESTIÓN DE SALAS DINÁMICAS ===
+// ============================================================
+
+// Crear una nueva sala
+window.createRoom = async () => {
+    const input = document.getElementById('new-room-input');
+    const roomName = input.value.trim();
+
+    if (!roomName) return;
+    
+    // Evitamos duplicar la sala General
+    if (roomName.toLowerCase() === 'general') {
+        Toastify({ text: "La sala General ya es fija.", duration: 3000, style: { background: "#f44336" } }).showToast();
+        return;
+    }
+
+    try {
+        await addDoc(collection(db, "rooms"), {
+            name: roomName,
+            createdBy: username,
+            createdAt: serverTimestamp()
+        });
+        input.value = '';
+        Toastify({ text: `Sala "${roomName}" creada`, duration: 3000, style: { background: "#4caf50" } }).showToast();
+    } catch (error) {
+        console.error("Error al crear sala:", error);
+    }
+};
+
+// Escuchar las salas en tiempo real
+function listenToRooms() {
+    const roomsRef = collection(db, "rooms");
+    const q = query(roomsRef, orderBy("createdAt", "asc"));
+    
+    unsubscribeRooms = onSnapshot(q, (snapshot) => {
+        const roomsList = document.getElementById('dynamic-rooms-list');
+        if (!roomsList) return;
+        
+        roomsList.innerHTML = ''; // Limpiar la lista para evitar duplicados
+        
+        snapshot.forEach((docSnap) => {
+            const roomData = docSnap.data();
+            const roomId = docSnap.id;
+            const roomName = roomData.name;
+            const creator = roomData.createdBy;
+
+            // Contenedor principal de la sala
+            const roomDiv = document.createElement('div');
+            roomDiv.style.display = 'flex';
+            roomDiv.style.alignItems = 'center';
+            roomDiv.style.gap = '5px';
+            roomDiv.style.padding = '0 10px';
+            roomDiv.style.marginBottom = '5px';
+
+            // Botón para ingresar a la sala
+            const roomBtn = document.createElement('button');
+            roomBtn.className = 'room-btn';
+            roomBtn.innerText = `💬 ${roomName}`;
+            roomBtn.style.flex = '1';
+            roomBtn.style.margin = '0';
+            roomBtn.onclick = () => switchRoom(roomName);
+
+            roomDiv.appendChild(roomBtn);
+
+            // Botón para eliminar (SOLO si el usuario logueado es el creador)
+            if (creator === username) {
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerText = '🗑️';
+                deleteBtn.title = 'Eliminar sala';
+                deleteBtn.style.cursor = 'pointer';
+                deleteBtn.style.background = '#ff4d4d';
+                deleteBtn.style.color = 'white';
+                deleteBtn.style.border = 'none';
+                deleteBtn.style.borderRadius = '4px';
+                deleteBtn.style.padding = '8px 10px';
+                deleteBtn.onclick = () => deleteRoom(roomId, roomName);
+                roomDiv.appendChild(deleteBtn);
+            }
+
+            roomsList.appendChild(roomDiv);
+        });
+    });
+}
+
+// Eliminar sala
+window.deleteRoom = async (roomId, roomName) => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar la sala "${roomName}"?`)) return;
+
+    try {
+        await deleteDoc(doc(db, "rooms", roomId));
+        Toastify({ text: `Sala "${roomName}" eliminada`, duration: 3000, style: { background: "#f44336" } }).showToast();
+        
+        // Si estábamos en la sala eliminada, forzamos volver a "General"
+        if (currentRoom === roomName) {
+            switchRoom('General');
+        }
+    } catch (error) {
+        console.error("Error al eliminar sala:", error);
+    }
+};
+
+
+
+
 
 // === CAMBIAR DE SALA ===
 window.switchRoom = async (roomName) => {
